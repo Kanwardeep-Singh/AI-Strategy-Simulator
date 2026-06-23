@@ -1,0 +1,60 @@
+version: "3.8"
+
+services:
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+
+    ports:
+      - "5678:5678"
+
+    environment:
+      - TZ=Europe/Berlin
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+
+      # PostgreSQL connection
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=ai_strategy
+      - DB_POSTGRESDB_USER=n8n
+      - DB_POSTGRESDB_PASSWORD=n8npassword
+
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:16
+
+    container_name: postgres
+
+    environment:
+      POSTGRES_USER: n8n
+      POSTGRES_PASSWORD: n8npassword
+      POSTGRES_DB: ai_strategy
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  gotenberg:
+    image: gotenberg/gotenberg:8
+
+    container_name: gotenberg
+
+    ports:
+      - "3000:3000"
+
+    restart: unless-stopped
+
+volumes:
+  n8n_data:
+  postgres_data:
